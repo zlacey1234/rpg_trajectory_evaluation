@@ -16,10 +16,10 @@ Algorithms:
   larvio:
     include algorithm: false
     label: larvio
-    file name: traj_estimate
+    file name: traj_est
   svo2:
     include algorithm: false
     label: svo2
-    file name: traj_estimate
+    file name: traj_est
     tests: [3, 4]
 RelDistances: []
