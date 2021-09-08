@@ -201,7 +201,7 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
         config_colors = []
 
         for algo in included_algorithm_names:
-            for alg_test in range(len(algorithm_test_names_dict[alg])):
+            for alg_test in range(len(algorithm_test_names_dict[algo])):
 
                 config_labels.append(plot_settings['algorithms_tests_labels'][algo][alg_test])
                 config_colors.append(plot_settings['alg_colors'][algo][alg_test])
@@ -278,9 +278,9 @@ def plot_trajectories_per_dataset(dataset_trajectories, dataset_names_list, incl
         config_colors = []
 
         for algo in included_algorithm_names:
-            for alg_test in range(len(algorithm_test_names_dict[alg])):
-                config_labels.append(plot_settings['algorithms_tests_labels'][algo][alg_test])
-                config_colors.append(plot_settings['alg_colors'][algo][alg_test])
+            for alg_test in range(len(algorithm_test_names_dict[algo])):
+                config_labels.append(plotting_settings['algorithms_tests_labels'][algo][alg_test])
+                config_colors.append(plotting_settings['alg_colors'][algo][alg_test])
 
         fig = plt.figure(figsize=(12, 6))
 
