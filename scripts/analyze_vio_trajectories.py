@@ -144,9 +144,9 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
     return dataset_relative_error
 
 
-def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, included_algorithm_names,
-                                    algorithm_test_names_dict, test_names_list, datasets_output_directory,
-                                    plot_settings):
+def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, dataset_names_list,
+                                    included_algorithm_names, algorithm_test_names_dict, test_names_list,
+                                    datasets_output_directory, plotting_settings):
     """ Plot Odometry Error Per Dataset
 
     This method creates box-plots which compare the odometry error of each vio algorithm/test configuration under each
@@ -155,6 +155,11 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
 
     Args:
         dataset_relative_error (datatype: list):
+
+        evaluation_uid (datatype: string):
+            A string which contains the evaluated uid that will be included in the output file name.
+
+            evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
 
         dataset_names_list (datatype: list): This is a list that contains the datasets that the user wants to generates
             figures for. The example shows the setup for the some of the Euroc Datasets.
@@ -181,7 +186,7 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
                                         'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
                                         'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
 
-        plot_settings (datatype: dict): A nested dictionary that specifies the plot settings.
+        plotting_settings (datatype: dict): A nested dictionary that specifies the plot settings.
 
     Returns: N/A
 
@@ -219,7 +224,7 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
                            config_labels, config_colors, legend=True)
 
         fig.tight_layout()
-        fig.savefig(output_directory + '/' + dataset_name +
+        fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
                     '_trans_percent_rot_per_meter_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
@@ -234,14 +239,66 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
                            config_labels, config_colors, legend=True)
 
         fig.tight_layout()
-        fig.savefig(output_directory + '/' + dataset_name +
-                    '_trans_rot_per_meter_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+        fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
+                    '_trans_rot_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
 
-def plot_trajectories_per_dataset(dataset_trajectories, dataset_names_list, included_algorithm_names,
-                                    algorithm_test_names_dict, test_names_list, datasets_output_directory,
-                                    plot_settings, plot_idx=0, plot_aligned=True):
+def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_names_list, included_algorithm_names,
+                                  algorithm_test_names_dict, test_names_list, datasets_output_directory,
+                                  plotting_settings, plot_idx=0, plot_aligned=True):
+    """ Plot Trajectories Per Dataset
+
+    This method generates figures which depict the Positional Drift of the Visual Inertial Odometry (drift with respect
+    to the ground truth data).
+
+    Args:
+        dataset_trajectories (
+
+        evaluation_uid (datatype: string):
+            A string which contains the evaluated uid that will be included in the output file name.
+
+            Example:
+                evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
+
+        dataset_names_list (datatype: list): This is a list that contains the datasets that the user wants to generates
+            figures for. The example shows the setup for the some of the Euroc Datasets.
+
+            dataset_names = ['MH_01', 'MH_03', 'MH_05']
+
+        included_algorithm_names (datatype:
+
+        algorithm_test_names_dict (datatype: dict): This is a nested dictionary that contains the test configurations
+            that the user wants to plot in the generated figures.
+
+            algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+
+        test_names_list (datatype: list): This is a list that contains all the algorithm/test configurations that the
+            user wants include in the generated comparison plot figures.
+
+            test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
+                               'svo2-test-3', 'svo2-test-4']
+
+        datasets_output_directory (datatype: dict): This is a nested dictionary that specifies the path to the output
+            directories of each dataset.
+
+            dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
+                                        'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
+                                        'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
+
+        plotting_settings (datatype: dict): A nested dictionary that specifies the plot settings.
+
+        plot_idx (datatype: int): An integer that is assigned a zero value. This is used to define the first index in
+            the trajectory list. In particular, the trajectories_list can be found as a single dimensional list that
+            contains the trajectory object.
+
+            trajectories_list =  [<object of trajectory>]
+
+            So,
+
+            trajectories_list[plot_idx] = <object of trajectory>
+
+    """
     for dataset_idx, dataset_name in enumerate(dataset_names_list):
         output_directory = datasets_output_directory[dataset_name]
         print("Plotting {0}...".format(dataset_name))
@@ -316,7 +373,7 @@ def plot_trajectories_per_dataset(dataset_trajectories, dataset_names_list, incl
             ax3.legend()
 
         fig.tight_layout()
-        fig.savefig(output_directory + '/' + dataset_name +
+        fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
                     '_position_drift' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
@@ -331,7 +388,7 @@ def plot_trajectories_per_dataset(dataset_trajectories, dataset_names_list, incl
             ax.legend()
 
         fig.tight_layout()
-        fig.savefig(output_directory + '/' + dataset_name +
+        fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
                     '_position_drift_norm' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
@@ -484,6 +541,7 @@ def parse_config_file(configuration_function, sort_names):
     algorithms_file_names_dict = {}
     algorithms_tests_dict = {}
     algorithms_tests_labels_dict = {}
+    algorithms_tests_labels_file_names_dict = {}
 
     # For each algorithm in the config.yaml, assign the algorithm label into the algorithms_labels dictionary and
     # specify the traj_est_<test_number> file that you want to extract data from.
@@ -498,6 +556,8 @@ def parse_config_file(configuration_function, sort_names):
             algorithms_file_names_list = []
             algorithms_tests_list = []
             algorithms_test_labels_list = []
+            algorithms_tests_labels_file_names_list = [
+                yaml_config_data['Algorithms'][algorithms_name]['label'] + '-test-']
 
             # For each Test Number
             for test_number in yaml_config_data['Algorithms'][algorithms_name]['tests']:
@@ -510,11 +570,13 @@ def parse_config_file(configuration_function, sort_names):
                 algorithms_file_names_list.append(algorithms_file_name_string)
                 algorithms_test_labels_list.append(algorithms_test_label_string)
                 algorithms_tests_list.append(test_number)
+                algorithms_tests_labels_file_names_list.append(str(test_number))
 
             # Place the Lists into the Dictionaries
             algorithms_file_names_dict[algorithms_name] = algorithms_file_names_list
             algorithms_tests_dict[algorithms_name] = algorithms_tests_list
             algorithms_tests_labels_dict[algorithms_name] = algorithms_test_labels_list
+            algorithms_tests_labels_file_names_dict[algorithms_name] = algorithms_tests_labels_file_names_list
 
     boxplot_distances_dict = []
     if 'RelDistances' in yaml_config_data:
@@ -530,7 +592,7 @@ def parse_config_file(configuration_function, sort_names):
 
     return comparison_options, datasets_list, datasets_labels_dict, datasets_titles_dict, all_algorithms_list, \
         algorithms_labels_dict, algorithms_file_names_dict, algorithms_tests_dict, algorithms_tests_labels_dict, \
-        boxplot_distances_dict, boxplot_percentages_dict
+        algorithms_tests_labels_file_names_dict, boxplot_distances_dict, boxplot_percentages_dict
 
 
 if __name__ == '__main__':
@@ -623,8 +685,8 @@ if __name__ == '__main__':
 
     # Parsing the Configuration yaml file
     compare_opts, datasets, datasets_labels, datasets_titles, all_algorithms, algorithms_labels, \
-        algorithms_file_names, algorithms_tests, algorithms_tests_labels, boxplot_distances, \
-        boxplot_percentages = parse_config_file(config_fn, args.sort_names)
+        algorithms_file_names, algorithms_tests, algorithms_tests_labels, algorithms_tests_labels_file_names, \
+        boxplot_distances, boxplot_percentages = parse_config_file(config_fn, args.sort_names)
 
     print(datasets_titles)
     print(boxplot_distances)
@@ -693,6 +755,7 @@ if __name__ == '__main__':
     plot_settings = {'datasets_labels': datasets_labels,
                      'datasets_titles': datasets_titles,
                      'algorithms_tests_labels': algorithms_tests_labels,
+                     'algorithms_tests_labels_file_name': algorithms_tests_labels_file_names,
                      'alg_colors': alg_colors}
 
     if args.png:
@@ -700,7 +763,8 @@ if __name__ == '__main__':
 
     # Evaluated UID: The joined string for the evaluated data (i.e., used for naming the table text files)
     eval_uid = \
-        '__'.join(list(itertools.chain.from_iterable(list(plot_settings['algorithms_tests_labels'].values())))) + \
+        '-'.join(list(itertools.chain.from_iterable(
+            list(plot_settings['algorithms_tests_labels_file_name'].values())))) + '__' + \
         datetime.now().strftime("%Y%m%d%H%M")
 
     # Number of Trials is 1 (default)
@@ -848,13 +912,13 @@ if __name__ == '__main__':
             dataset_multierror_list, datasets)
         print(Fore.MAGENTA +
               '--- Generating relative (KITTI style) error plots ---')
-        plot_odometry_error_per_dataset(dataset_rel_err, datasets, included_alg, algorithms_tests, tests_label_list,
-                                        datasets_res_dir, plot_settings)
+        plot_odometry_error_per_dataset(dataset_rel_err, eval_uid, datasets, included_alg, algorithms_tests,
+                                        tests_label_list, datasets_res_dir, plot_settings)
     print(Fore.GREEN + "<<< .... processing odometry errors done.\n")
 
     if args.plot_trajectories:
         print(Fore.MAGENTA+'--- Plotting trajectory top and side view ... ---')
-        plot_trajectories_per_dataset(dataset_trajectories_list, datasets, included_alg, algorithms_tests,
+        plot_trajectories_per_dataset(dataset_trajectories_list, eval_uid, datasets, included_alg, algorithms_tests,
                                       tests_label_list, datasets_res_dir,
                                       plot_settings, plot_aligned=args.plot_aligned)
 
