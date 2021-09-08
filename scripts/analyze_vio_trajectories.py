@@ -42,21 +42,23 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
     dataset_multi_error_list and store the information in Dataset Relative Error List.
 
     Args:
-        dataset_multi_error_list (datatype: list): A nested list that contains the multiple error information for each
-            test configurations in each dataset.
+        dataset_multi_error_list : `list`
+            A nested list that contains the multiple error information for each test configurations in each dataset.
 
             dataset_multi_error_list = [
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_01
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_03
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>] ]  # MH_05
 
-        dataset_names_list (datatype: list): This is a list that contains the datasets that the user wants to generates
-            figures for. The example shows the setup for the some of the Euroc Datasets.
+        dataset_names_list :  `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
 
             dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
     Returns:
-        dataset_relative_error (datatype: list): A nested list that contains the relative error information.
+        dataset_relative_error : `list`
+            A nested list that contains the relative error information.
 
             dataset_relative_error = [
                 {   # Dictionary for MH_01
@@ -154,39 +156,70 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
     <dataset name>_trans_rot_error.pdf file in the results directory (i.e., MH_01_trans_rot_error.pdf).
 
     Args:
-        dataset_relative_error (datatype: list):
+        dataset_relative_error : `list`
+            A nested list that contains the relative error information.
 
-        evaluation_uid (datatype: string):
+            dataset_relative_error = [
+                {   # Dictionary for MH_01
+                    'trans_err':
+                    'trans_err_perc':
+                    'ang_yaw_err':
+                    'rot_err':
+                    'rot_deg_per_m': {'rovio-test-0':
+                    'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
+                },
+                {   # Dictionary for MH_03
+                    'trans_err':
+                    'trans_err_perc':
+                    'ang_yaw_err':
+                    'rot_err':
+                    'rot_deg_per_m': {'rovio-test-0':
+                    'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
+                },
+                {   # Dictionary for MH_05
+                    'trans_err':
+                    'trans_err_perc':
+                    'ang_yaw_err':
+                    'rot_err':
+                    'rot_deg_per_m': {'rovio-test-0':
+                    'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
+                } ]
+
+        evaluation_uid : `str`
             A string which contains the evaluated uid that will be included in the output file name.
 
             evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
 
-        dataset_names_list (datatype: list): This is a list that contains the datasets that the user wants to generates
-            figures for. The example shows the setup for the some of the Euroc Datasets.
+        dataset_names_list : `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
 
             dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
-        included_algorithm_names (datatype:
+        included_algorithm_names : ``
 
-        algorithm_test_names_dict (datatype: dict): This is a nested dictionary that contains the test configurations
-            that the user wants to plot in the generated figures.
+        algorithm_test_names_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
 
             algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
-        test_names_list (datatype: list): This is a list that contains all the algorithm/test configurations that the
-            user wants include in the generated comparison plot figures.
+        test_names_list : `list`
+            A list that contains all the algorithm/test configurations that the user wants include in the generated
+            comparison plot figures.
 
             test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
                                'svo2-test-3', 'svo2-test-4']
 
-        datasets_output_directory (datatype: dict): This is a nested dictionary that specifies the path to the output
-            directories of each dataset.
+        datasets_output_directory : `dict`
+            A nested dictionary that specifies the path to the output directories of each dataset.
 
             dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
                                         'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
                                         'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
 
-        plotting_settings (datatype: dict): A nested dictionary that specifies the plot settings.
+        plotting_settings : `dict`
+            A nested dictionary that specifies the plot settings.
 
     Returns: N/A
 
@@ -255,38 +288,41 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
     Args:
         dataset_trajectories (
 
-        evaluation_uid (datatype: string):
+        evaluation_uid : `str`
             A string which contains the evaluated uid that will be included in the output file name.
 
-            Example:
-                evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
+            evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
 
-        dataset_names_list (datatype: list): This is a list that contains the datasets that the user wants to generates
-            figures for. The example shows the setup for the some of the Euroc Datasets.
+        dataset_names_list : `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
 
             dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
-        included_algorithm_names (datatype:
+        included_algorithm_names : ``
 
-        algorithm_test_names_dict (datatype: dict): This is a nested dictionary that contains the test configurations
-            that the user wants to plot in the generated figures.
+        algorithm_test_names_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
 
             algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
-        test_names_list (datatype: list): This is a list that contains all the algorithm/test configurations that the
-            user wants include in the generated comparison plot figures.
+        test_names_list : `list`
+            A list that contains all the algorithm/test configurations that the user wants include in the generated
+            comparison plot figures.
 
             test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
                                'svo2-test-3', 'svo2-test-4']
 
-        datasets_output_directory (datatype: dict): This is a nested dictionary that specifies the path to the output
-            directories of each dataset.
+        datasets_output_directory : `dict`
+            A nested dictionary that specifies the path to the output directories of each dataset.
 
             dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
                                         'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
                                         'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
 
-        plotting_settings (datatype: dict): A nested dictionary that specifies the plot settings.
+        plotting_settings : `dict`
+            A nested dictionary that specifies the plot settings.
 
         plot_idx (datatype: int): An integer that is assigned a zero value. This is used to define the first index in
             the trajectory list. In particular, the trajectories_list can be found as a single dimensional list that
@@ -426,16 +462,19 @@ def parse_config_file(configuration_function, sort_names):
         RelDistances: []
 
     Args:
-        configuration_function (datatype: string): This is a string which contains the filepath to the config.yaml file.
-            For our case, we use want to path to the av_euroc_vio_mono_config.yaml file.
+        configuration_function : `str`
+            A string which contains the filepath to the config.yaml file. For our case, we use want to path to the
+            av_euroc_vio_mono_config.yaml file.
 
-        sort_names (datatype: boolean): This is a boolean flag that is passed in as an argument to the python script.
-            Enabling this means we sort the list of algorithms. This is useful if you want to create plots that compare
-            different algorithms and you want the algorithm legend to be in alphabetical order.
+        sort_names : `bool`
+            A boolean flag that is passed in as an argument to the python script. Enabling this means we sort the list
+            of algorithms. This is useful if you want to create plots that compare different algorithms and you want
+            the algorithm legend to be in alphabetical order.
 
     Returns:
-        comparison_options (datatype: dict): This is a dictionary that contains the boolean which dictates if you want
-            to make plots that compare accuracy across multiple vio algorithms.
+        comparison_options : `dict`
+            A dictionary that contains the boolean which dictates if you want to make plots that compare accuracy
+            across multiple vio algorithms.
 
             comparison_options = {'algorithms': True}
 
@@ -464,42 +503,46 @@ def parse_config_file(configuration_function, sort_names):
                         larvio-test-4     --->     blue
                         larvio-test-5     --->     green
 
-        datasets_list (datatype: list): This is a list that contains the datasets that the user wants to generates
-            figures for. The example shows the setup for the some of the Euroc Datasets.
+        datasets_list : `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
 
             datasets_list = ['MH_01', 'MH_03', 'MH_05']
 
-        datasets_labels_dict (datatype: dict): This is a dictionary that contains the datasets and their corresponding
-            labels.
+        datasets_labels_dict : `dict`
+            A dictionary that contains the datasets and their corresponding labels.
 
             datasets_labels_dict = {'MH_01': 'MH01', 'MH_03': 'MH03', 'MH_05': 'MH05'}
 
-        datasets_titles_dict (datatype: dict):
+        datasets_titles_dict : `dict`
 
-        all_algorithms_list (datatype: list): This is a list of all the possible algorithms specified in the yaml file.
+        all_algorithms_list : `list`
+            A list of all the possible algorithms specified in the yaml file.
 
             all_algorithms_list = ['larvio', 'rovio', 'svo2']
 
-        algorithms_labels_dict (datatype: dict): This is a dictionary that contains the labels for the algorithms that
-            are specified to be included in the generated figures (specified in the yaml via the include algorithm
-            dictionary key)
+        algorithms_labels_dict : `dict`
+            A dictionary that contains the labels for the algorithms that are specified to be included in the generated
+            figures (specified in the yaml via the include algorithm dictionary key)
 
             algorithms_labels_dict = {'rovio': 'rovio', 'svo2': 'svo2'}
 
-        algorithms_file_names_dict (datatype: dict): this is a dictionary that contains the file names for the
-            algorithms that are specified to be included in the generated figures (specified in the yaml via the
-            include algorithm dictionary key)
+        algorithms_file_names_dict : `dict`
+            A dictionary that contains the file names for the algorithms that are specified to be included in the
+            generated figures (specified in the yaml via the include algorithm dictionary key)
 
             algorithms_file_names_dict = {'rovio': ['traj_est', 'traj_est', 'traj_est', 'traj_est'],
                 'svo2': ['traj_est', 'traj_est']}
 
-        algorithms_tests_dict (datatype: dict): This is a nested dictionary that contains the test configurations that
-            the user wants to plot in the generated figures.
+        algorithms_tests_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
 
             algorithms_tests_dict = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
-        algorithms_tests_labels_dict (datatype: dict): This is is a nested dictionary that contains the test labels.
-            These labels are used for purposes such as the plot's legend names.
+        algorithms_tests_labels_dict : `dict`
+            A nested dictionary that contains the test labels. These labels are used for purposes such as the plot's
+            legend names.
 
             algorithms_tests_labels_dict = {'rovio': ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3'],
                 'svo2': ['svo2-test-3', 'svo2-test-4']}
