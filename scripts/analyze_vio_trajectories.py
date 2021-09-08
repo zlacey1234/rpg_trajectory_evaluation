@@ -1,4 +1,4 @@
-#!/usr/bin/env python3#!/usr/bin/env python3
+#!/usr/bin/env python3
 
 import os
 import argparse
@@ -38,7 +38,8 @@ PALLET = spec(10)
 def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_list):
     """ Collect Odometry Error Per Dataset Method
 
-    This method
+    This method is used collect the calculated odometry error from each Multi Trajectory Error Object within the
+    dataset_multi_error_list and store the information in Dataset Relative Error List.
 
     Args:
         dataset_multi_error_list (datatype: list): A nested list that contains the multiple error information for each
@@ -62,6 +63,7 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
                     'trans_err':
                     'trans_err_perc':
                     'ang_yaw_err':
+                    'rot_err':
                     'rot_deg_per_m': {'rovio-test-0':
                     'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
                 },
@@ -69,6 +71,7 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
                     'trans_err':
                     'trans_err_perc':
                     'ang_yaw_err':
+                    'rot_err':
                     'rot_deg_per_m': {'rovio-test-0':
                     'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
                 },
@@ -76,6 +79,7 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
                     'trans_err':
                     'trans_err_perc':
                     'ang_yaw_err':
+                    'rot_err':
                     'rot_deg_per_m': {'rovio-test-0':
                     'subtraj_len': [<timestamp 1 sub-trajectories>, <timestamp 2 sub-trajectories>, ... ]
                 } ]
@@ -101,8 +105,8 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
         for data_idx in dataset_mt_error:
             print('  - {0}: {1}'.format(data_idx.alg, data_idx.uid))
 
-        cur_res = {'trans_err': {}, 'trans_err_perc': {}, 'ang_yaw_err': {}, 'rot_deg_per_m': {},
-                   'subtraj_len': dataset_mt_error[0].rel_distances}
+        cur_res = {'trans_err': {}, 'trans_err_perc': {}, 'ang_yaw_err': {}, 'rot_err': {},
+                   'rot_deg_per_m': {}, 'subtraj_len': dataset_mt_error[0].rel_distances}
 
         for data_idx in dataset_mt_error:
             assert cur_res['subtraj_len'] == data_idx.rel_distances, \
@@ -111,31 +115,32 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
             cur_res['subtraj_len']))
 
         print("Processing each configurations...")
-        for mt_error in dataset_mt_error:
-            cur_alg = mt_error.alg
+        for mt_error_idx in dataset_mt_error:
+            cur_alg = mt_error_idx.alg
             print('  - {0}'.format(cur_alg))
             cur_res['trans_err'][cur_alg] = []
             cur_res['trans_err_perc'][cur_alg] = []
             cur_res['ang_yaw_err'][cur_alg] = []
             cur_res['rot_deg_per_m'][cur_alg] = []
+            cur_res['rot_err'][cur_alg] = []
 
             for dist in cur_res['subtraj_len']:
                 cur_res['trans_err'][cur_alg].append(
-                    mt_error.rel_errors[dist]['rel_trans'])
+                    mt_error_idx.rel_errors[dist]['rel_trans'])
                 cur_res['trans_err_perc'][cur_alg].append(
-                    mt_error.rel_errors[dist]['rel_trans_perc'])
+                    mt_error_idx.rel_errors[dist]['rel_trans_perc'])
                 cur_res['ang_yaw_err'][cur_alg].append(
-                    mt_error.rel_errors[dist]['rel_yaw'])
+                    mt_error_idx.rel_errors[dist]['rel_yaw'])
+                cur_res['rot_err'][cur_alg].append(
+                    mt_error_idx.rel_errors[dist]['rel_rot'])
                 cur_res['rot_deg_per_m'][cur_alg].append(
-                    mt_error.rel_errors[dist]['rel_rot_deg_per_m'])
+                    mt_error_idx.rel_errors[dist]['rel_rot_deg_per_m'])
 
         dataset_relative_error.append(cur_res)
         print("< Finish processing {0} for all configurations.".format(
             dataset_name))
 
     print("<<< ...finish collecting relative error.\n")
-    # print(dataset_relative_error[0]['trans_err'])
-
     return dataset_relative_error
 
 
@@ -215,7 +220,22 @@ def plot_odometry_error_per_dataset(dataset_relative_error, dataset_names_list, 
 
         fig.tight_layout()
         fig.savefig(output_directory + '/' + dataset_name +
-                    '_trans_rot_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+                    '_trans_percent_rot_per_meter_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+        plt.close(fig)
+
+        #
+        fig = plt.figure(figsize=(12, 3))
+        ax = fig.add_subplot(121, xlabel='Distance traveled (m)', ylabel='Translation error [m]')
+        pu.boxplot_compare(ax, distances, [rel_err['trans_err'][test_name] for test_name in test_names_list],
+                           config_labels, config_colors, legend=False)
+
+        ax = fig.add_subplot(122, xlabel='Distance traveled (m)', ylabel='Rotation error [deg]')
+        pu.boxplot_compare(ax, distances, [rel_err['rot_err'][test_name] for test_name in test_names_list],
+                           config_labels, config_colors, legend=True)
+
+        fig.tight_layout()
+        fig.savefig(output_directory + '/' + dataset_name +
+                    '_trans_rot_per_meter_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
 
