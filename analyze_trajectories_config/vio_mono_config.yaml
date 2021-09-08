@@ -1,0 +1,25 @@
+Comparison Options:
+  algorithms: true
+Included Datasets:
+  MH_01:
+    label: MH01
+  MH_03:
+    label: MH03
+  MH_05:
+    label: MH05
+Algorithms:
+  rovio:
+    include algorithm: true
+    label: rovio
+    file name: traj_est
+    tests: [0, 1, 2, 3]
+  larvio:
+    include algorithm: false
+    label: larvio
+    file name: traj_estimate
+  svo2:
+    include algorithm: false
+    label: svo2
+    file name: traj_estimate
+    tests: [3, 4]
+RelDistances: []
