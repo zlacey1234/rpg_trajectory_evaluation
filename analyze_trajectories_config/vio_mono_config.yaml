@@ -1,22 +1,65 @@
+# Example:
+########################################################################################################################
+# Comparison Options:
+#   algorithms: true
+# Included Datasets:
+#   MH_01:
+#     label: MH01
+#     file name: mh_01
+#     rosbag name: MH_01_easy
+#   MH_03:
+#     label: MH03
+#     file name: mh_03
+#     rosbag name: MH_03_medium
+#   MH_05:
+#     label: MH05
+#     file name: mh_05
+#     rosbag name: MH_05_difficult
+# Algorithms:
+#   rovio:
+#     include algorithm: false
+#     label: rovio
+#     file name: traj_est
+#     tests: [2, 3, 10, 11, 12]
+#   larvio:
+#     include algorithm: true
+#     label: larvio
+#     file name: traj_est
+#     tests: [0, 1]
+#   svo2:
+#     include algorithm: false
+#     label: svo2
+#     file name: traj_est
+#     tests: [3, 4]
+# RelDistances: []
+########################################################################################################################
+
 Comparison Options:
   algorithms: true
 Included Datasets:
   MH_01:
     label: MH01
+    file name: mh_01
+    rosbag name: MH_01_easy
   MH_03:
     label: MH03
+    file name: mh_03
+    rosbag name: MH_03_medium
   MH_05:
     label: MH05
+    file name: mh_05
+    rosbag name: MH_05_difficult
 Algorithms:
   rovio:
-    include algorithm: true
+    include algorithm: false
     label: rovio
     file name: traj_est
-    tests: [0, 1, 2, 3]
+    tests: [2, 3, 10, 11, 12]
   larvio:
-    include algorithm: false
+    include algorithm: true
     label: larvio
     file name: traj_est
+    tests: [0, 1]
   svo2:
     include algorithm: false
     label: svo2
