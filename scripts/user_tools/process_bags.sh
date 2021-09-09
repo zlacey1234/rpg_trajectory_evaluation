@@ -42,4 +42,3 @@ python scripts/dataset_tools/bag_to_pose.py "$result_path"/"$alg"_traj_"$test_nu
 mv "$result_path"/stamped_poses.txt "$result_path"/"$alg"-test-"$test_num"/stamped_traj_estimate.txt
 cp "$result_path"/eval_cfg.yaml "$result_path"/"$alg"-test-"$test_num"/
 cp "$result_path"/stamped_groundtruth.txt "$result_path"/"$alg"-test-"$test_num"/
-
