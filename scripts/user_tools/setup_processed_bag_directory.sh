@@ -1,26 +1,24 @@
 #!/usr/bin/env bash
 # Usage:
-# bash scripts/user_tools/setup_processed_bag_directory.sh <number of bags> <algorithm name> <platform> <dataset name (lower case)> <dataset name (upper case)>
+# bash scripts/user_tools/setup_processed_bag_directory.sh <test number> <algorithm name> <platform>
+#   <dataset name (upper case)> <output directory>
 # eg:
-#   bash scripts/user_tools/setup_processed_bag_directory.sh 9 rovio arm mh_01 MH_01
+#   bash scripts/user_tools/setup_processed_bag_directory.sh 1 rovio arm MH_01 ./results/av_euroc_vio_mono
 #
 # Must be ran from the rpg_trajectory_evaluation directory
-
-total_bags=$1
+test_num=$1
 alg=$2
 arch=$3
-bag_datasets_name=$4
-updated_bag_datasets_name=$5
+updated_bag_datasets_name=$4
+output_dir=$5
 
-result_path="/root/catkin_ws/src/rpg_trajectory_evaluation/results/av_euroc_vio_mono/"$arch"/"$alg"/"$arch"_"$alg"_"$updated_bag_datasets_name""
+result_path=$output_dir"/"$arch"/"$alg"/"$arch"_"$alg"_"$updated_bag_datasets_name""
+
 echo result_path = $result_path
 
-echo $total_bags
+echo $test_num
 
-for ((i = 0 ; i <= $total_bags ; i++)); do
-  echo "Making Directory for $alg , Test $i"
+echo "Making Directory for $alg , Test $test_num"
 
-  cd "$result_path"
-  mkdir -p "$alg"-test-"$i"
-
-done
+cd "$result_path"
+mkdir -p "$alg"-test-"$test_num"
