@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 # Usage:
-# bash scripts/user_tools/process_bags.sh <number of bags> <algorithm name> <platform> <dataset name (lower case)> <dataset name (upper case)>
+# bash scripts/user_tools/process_bags.sh <test number> <algorithm name> <platform>
+#   <dataset name (upper case)> <output directory>
 # eg:
-#   bash scripts/user_tools/process_bags.sh 9 rovio arm mh_01 MH_01
+#   bash scripts/user_tools/process_bags.sh 1 rovio arm MH_01 ./results/av_euroc_vio_mono
 #
 # Must be ran from the rpg_trajectory_evaluation directory
-
-total_bags=$1
+test_num=$1
 alg=$2
 arch=$3
-bag_datasets_name=$4
-updated_bag_datasets_name=$5
+updated_bag_datasets_name=$4
+output_dir=$5
 
-result_path="/root/catkin_ws/src/rpg_trajectory_evaluation/results/av_euroc_vio_mono/"$arch"/"$alg"/"$arch"_"$alg"_"$updated_bag_datasets_name""
+result_path=$output_dir"/"$arch"/"$alg"/"$arch"_"$alg"_"$updated_bag_datasets_name""
+
 echo result_path = $result_path
 topic_name="init"
 topic_type="init"
@@ -34,15 +35,11 @@ else
   exit 1
 fi
 
-echo $total_bags
+echo "PROCESSING BAG $test_num"
 
-for ((i = 0 ; i <= $total_bags ; i++)); do
-  echo "PROCESSING BAG $i"
+python scripts/dataset_tools/bag_to_pose.py "$result_path"/"$alg"_traj_"$test_num".bag $topic_name --msg_type=$topic_type
 
-  python scripts/dataset_tools/bag_to_pose.py "$result_path"/"$alg"_traj_"$i".bag $topic_name --msg_type=$topic_type
+mv "$result_path"/stamped_poses.txt "$result_path"/"$alg"-test-"$test_num"/stamped_traj_estimate.txt
+cp "$result_path"/eval_cfg.yaml "$result_path"/"$alg"-test-"$test_num"/
+cp "$result_path"/stamped_groundtruth.txt "$result_path"/"$alg"-test-"$test_num"/
 
-  mv "$result_path"/stamped_poses.txt "$result_path"/"$alg"-test-"$i"/stamped_traj_estimate.txt
-  cp "$result_path"/eval_cfg.yaml "$result_path"/"$alg"-test-"$i"/
-  cp "$result_path"/stamped_groundtruth.txt "$result_path"/"$alg"-test-"$i"/
-
-done
