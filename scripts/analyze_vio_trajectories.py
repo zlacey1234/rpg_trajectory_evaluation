@@ -289,7 +289,76 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
 
 def collect_absolute_error_per_algorithm_test(configuration_trajectories_list, included_algorithm_names,
                                               algorithm_test_names_dict, plot_idx=0):
-    """
+    """ Collect Absolute Error Per Algorithm Test
+
+    Args:
+        configuration_trajectories_list : `list`
+            A nested list that contains the trajectory information for each test configurations in each algorithm.
+
+            - Example: configuration_trajectories_list = [
+                [
+                    #       MH_01                  MH_03                  MH_05
+                    [<object rovio-test-0>, <object rovio-test-0>, <object rovio-test-0>],
+                ],
+                [
+                #       MH_01                  MH_03                  MH_05
+                    [<object larvio-test-0>, <object larvio-test-0>, <object larvio-test-0>],
+                    [<object larvio-test-1>, <object larvio-test-1>, <object larvio-test-1>]
+                ]]
+
+        included_algorithm_names : `list`
+            A list of the algorithms that we selected to include in the config.yaml file.
+
+        algorithm_test_names_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
+
+            - Example: algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+
+        plot_idx : `int`
+            An integer that is assigned a zero value. This is used to define the first index in the trajectory list.
+            In particular, the trajectories_list can be found as a single dimensional list that contains the trajectory
+            object.
+
+            - Example: trajectories_list =  [<object of trajectory>]
+
+                       So,
+
+                       trajectories_list[plot_idx] = <object of trajectory>
+
+    Returns:
+        algorithm_test_absolute_error : `dict`
+            A nested dictionary that contains the translational and rotational absolute error for each of the
+            algorithm-test parameters.
+
+            - Example:
+            algorithm_test_absolute_error = {
+                'absolute_translation_error': {
+                    'rovio-test-0': {
+                        [<abs error signal rovio-test-0 MH_01>],
+                        [<abs error signal rovio-test-0 MH_03>],
+                        [<abs error signal rovio-test-0 MH_05>]},
+                    'larvio-test-0': {
+                        [<abs error signal larvio-test-0 MH_01>],
+                        [<abs error signal larvio-test-0 MH_03>],
+                        [<abs error signal larvio-test-0 MH_05>]},
+                    'larvio-test-1': {
+                        [<abs error signal larvio-test-1 MH_01>],
+                        [<abs error signal larvio-test-1 MH_03>],
+                        [<abs error signal larvio-test-1 MH_05>]}},
+                'absolute_rotation_error': {
+                    'rovio-test-0': {
+                        [<abs error signal rovio-test-0 MH_01>],
+                        [<abs error signal rovio-test-0 MH_03>],
+                        [<abs error signal rovio-test-0 MH_05>]},
+                    'larvio-test-0': {
+                        [<abs error signal larvio-test-0 MH_01>],
+                        [<abs error signal larvio-test-0 MH_03>],
+                        [<abs error signal larvio-test-0 MH_05>]},
+                    'larvio-test-1': {
+                        [<abs error signal larvio-test-1 MH_01>],
+                        [<abs error signal larvio-test-1 MH_03>],
+                        [<abs error signal larvio-test-1 MH_05>]}}}
 
     """
     algorithm_test_absolute_error = {'absolute_translation_error': {}, 'absolute_rotation_error': {}}
@@ -316,8 +385,77 @@ def collect_absolute_error_per_algorithm_test(configuration_trajectories_list, i
 
 def plot_absolute_error_per_algorithm_test(algorithm_test_absolute_error, dataset_names_list, included_algorithm_names,
                                            algorithm_test_names_dict, test_names_list, output_directory,
-                                           plotting_settings, plot_idx=0):
-    """
+                                           plotting_settings):
+    """ Plot Absolute Error Per Algorithm Test
+
+    This method create a box-plot which compares the translational and rotational absolute error (error across the
+    entire distance traveled. Note: Different from relative error which separates the trajectory into sub-trajectories)
+    of each vio algorithm/test configuration under each dataset. This means, this method creates a box-plot figure for
+    translation and rotation absolute errors. This can be found as the all_translation_absolute_error.pdf and
+    all_rotation_absolute_error. pdf files in the main results directory.
+    Args:
+        algorithm_test_absolute_error : `dict`
+            A nested dictionary that contains the translational and rotational absolute error for each of the
+            algorithm-test parameters.
+
+            - Example:
+            algorithm_test_absolute_error = {
+                'absolute_translation_error': {
+                    'rovio-test-0': {
+                        [<abs error signal rovio-test-0 MH_01>],
+                        [<abs error signal rovio-test-0 MH_03>],
+                        [<abs error signal rovio-test-0 MH_05>]},
+                    'larvio-test-0': {
+                        [<abs error signal larvio-test-0 MH_01>],
+                        [<abs error signal larvio-test-0 MH_03>],
+                        [<abs error signal larvio-test-0 MH_05>]},
+                    'larvio-test-1': {
+                        [<abs error signal larvio-test-1 MH_01>],
+                        [<abs error signal larvio-test-1 MH_03>],
+                        [<abs error signal larvio-test-1 MH_05>]}},
+                'absolute_rotation_error': {
+                    'rovio-test-0': {
+                        [<abs error signal rovio-test-0 MH_01>],
+                        [<abs error signal rovio-test-0 MH_03>],
+                        [<abs error signal rovio-test-0 MH_05>]},
+                    'larvio-test-0': {
+                        [<abs error signal larvio-test-0 MH_01>],
+                        [<abs error signal larvio-test-0 MH_03>],
+                        [<abs error signal larvio-test-0 MH_05>]},
+                    'larvio-test-1': {
+                        [<abs error signal larvio-test-1 MH_01>],
+                        [<abs error signal larvio-test-1 MH_03>],
+                        [<abs error signal larvio-test-1 MH_05>]}}}
+
+        dataset_names_list : `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
+
+            - Example: dataset_names = ['MH_01', 'MH_03', 'MH_05']
+
+        included_algorithm_names : `list`
+            A list of the algorithms that we selected to include in the config.yaml file.
+
+        algorithm_test_names_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
+
+            - Example: algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+
+        test_names_list : `list`
+            A list that contains all the algorithm/test configurations that the user wants include in the generated
+            comparison plot figures.
+
+            - Example:test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
+                                         'svo2-test-3', 'svo2-test-4']
+
+        output_directory : `dict`
+            A nested dictionary that specifies the path to the main output directory.
+
+            - Example: output_directory = './results/av_euroc_vio_mono'
+
+        plotting_settings : `dict`
+            A nested dictionary that specifies the plot settings.
 
     """
     # Configure the labels (legend text) and the colors (legend colors).
@@ -345,6 +483,17 @@ def plot_absolute_error_per_algorithm_test(algorithm_test_absolute_error, datase
                         for algo_test in test_names_list], config_labels, config_colors)
     fig.tight_layout()
     fig.savefig(output_directory + '/' + 'all_translation_absolute_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+    plt.close(fig)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(
+        111, xlabel='Datasets',
+        ylabel='Rotation Absolute Error (deg)')
+    pu.boxplot_compare(ax, labels,
+                       [algorithm_test_absolute_error['absolute_rotation_error'][algo_test]
+                        for algo_test in test_names_list], config_labels, config_colors)
+    fig.tight_layout()
+    fig.savefig(output_directory + '/' + 'all_rotation_absolute_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
     plt.close(fig)
 
 
@@ -882,7 +1031,8 @@ def parse_config_file(configuration_function, sort_names):
             for test_number in yaml_config_data['Algorithms'][algorithms_name]['tests']:
                 algorithms_file_name_string = yaml_config_data['Algorithms'][algorithms_name]['file name']
 
-                algorithms_test_label_string = yaml_config_data['Algorithms'][algorithms_name]['label'] + '-test-' + str(test_number)
+                algorithms_test_label_string = \
+                    yaml_config_data['Algorithms'][algorithms_name]['label'] + '-test-' + str(test_number)
 
                 # Append to the Lists
                 algorithms_file_names_list.append(algorithms_file_name_string)
@@ -908,10 +1058,10 @@ def parse_config_file(configuration_function, sort_names):
         print(Fore.RED + "Will use the distances instead of percentages.")
         boxplot_percentages_dict = []
 
-    return comparison_options, datasets_list, datasets_labels_dict, datasets_file_names_dict,\
-           datasets_rosbag_names_dict, datasets_titles_dict, all_algorithms_list, algorithms_labels_dict,\
-           algorithms_file_names_dict, algorithms_tests_dict, algorithms_tests_labels_dict,\
-           algorithms_tests_labels_file_names_dict, boxplot_distances_dict, boxplot_percentages_dict
+    return comparison_options, datasets_list, datasets_labels_dict, datasets_file_names_dict, \
+        datasets_rosbag_names_dict, datasets_titles_dict, all_algorithms_list, algorithms_labels_dict, \
+        algorithms_file_names_dict, algorithms_tests_dict, algorithms_tests_labels_dict, \
+        algorithms_tests_labels_file_names_dict, boxplot_distances_dict, boxplot_percentages_dict
 
 
 if __name__ == '__main__':
@@ -949,7 +1099,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--odometry_error_per_dataset',
         help="Analyze odometry error for individual dataset. "
-             "The same subtrajectory length will be used for the same dataset "
+             "The same sub-trajectory length will be used for the same dataset "
              "and different algorithms",
         action='store_true')
     parser.add_argument(
@@ -960,7 +1110,7 @@ if __name__ == '__main__':
 
     # RMSE (ATE)
     parser.add_argument(
-        '--rmse_table', help='Output rms erros into latex tables',
+        '--rmse_table', help='Output rms errors into latex tables',
         action='store_true')
     parser.add_argument(
         '--rmse_table_median_only', action='store_true', dest='rmse_median_only')
@@ -1014,9 +1164,9 @@ if __name__ == '__main__':
 
     # Parsing the Configuration yaml file
     compare_opts, datasets, datasets_labels, datasets_file_names, datasets_rosbag_names, datasets_titles, \
-    all_algorithms, algorithms_labels, algorithms_file_names, algorithms_tests, algorithms_tests_labels, \
-    algorithms_tests_labels_file_names, boxplot_distances, boxplot_percentages = parse_config_file(config_fn,
-                                                                                                   args.sort_names)
+        all_algorithms, algorithms_labels, algorithms_file_names, algorithms_tests, algorithms_tests_labels, \
+        algorithms_tests_labels_file_names, boxplot_distances, boxplot_percentages = parse_config_file(config_fn,
+                                                                                                       args.sort_names)
 
     # Copy the Configuration yaml to the Output Directory
     shutil.copy2(config_fn, output_dir)
@@ -1102,7 +1252,7 @@ if __name__ == '__main__':
     # If Multiple Number of Trials is specified
     if args.mul_trials:
         print(Fore.YELLOW +
-              "We will ananlyze multiple trials #{0}".format(args.mul_trials))
+              "We will analyze multiple trials #{0}".format(args.mul_trials))
         n_trials = args.mul_trials
 
     need_odometry_error = args.odometry_error_per_dataset or args.overall_odometry_error
@@ -1249,20 +1399,20 @@ if __name__ == '__main__':
 
     if args.write_time_statistics:
         dataset_alg_t_stats = []
-        for didx, d in enumerate(datasets):
+        for d_idx, d in enumerate(datasets):
             cur_d_time_stats = {}
-            for algidx, alg in enumerate(algorithms):
+            for alg_idx, alg in enumerate(algorithms):
                 cur_alg_t_stats = {'start': [], 'end': [], 'n_meas': []}
-                for traj in dataset_trajectories_list[didx][algidx]:
+                for traj in dataset_trajectories_list[d_idx][alg_idx]:
                     cur_alg_t_stats['start'].append(traj.t_es[0])
                     cur_alg_t_stats['end'].append(traj.t_es[-1])
                     cur_alg_t_stats['n_meas'].append(traj.t_es.size)
                 cur_d_time_stats[alg_labels[alg]] = cur_alg_t_stats
             dataset_alg_t_stats.append(cur_d_time_stats)
 
-        for didx, d in enumerate(datasets):
+        for d_idx, d in enumerate(datasets):
             with open(os.path.join(datasets_res_dir[d], '{}_meas_stats.json'.format(d)), 'w') as f:
-                json.dump(dataset_alg_t_stats[didx], f, indent=2)
+                json.dump(dataset_alg_t_stats[d_idx], f, indent=2)
 
     import subprocess as s
 
