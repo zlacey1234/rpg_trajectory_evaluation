@@ -8,6 +8,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.lines as mlines
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import rc
 rc('font', **{'family': 'serif', 'serif': ['Cardo']})
@@ -30,8 +31,8 @@ def boxplot_compare(ax, xlabels,
                     legend=True):
     n_data = len(data)
     n_xlabel = len(xlabels)
-    leg_handles = []
-    leg_labels = []
+    legend_handles = []
+    legend_labels = []
     idx = 0
     for idx, d in enumerate(data):
         # print("idx and d: {0} and {1}".format(idx, d))
@@ -42,9 +43,9 @@ def boxplot_compare(ax, xlabels,
         # print("Positions: {0}".format(positions))
         bp = ax.boxplot(d, 0, '', positions=positions, widths=widths)
         color_box(bp, data_colors[idx])
-        tmp, = plt.plot([1, 1], c=data_colors[idx], alpha=0)
-        leg_handles.append(tmp)
-        leg_labels.append(data_labels[idx])
+        legend_line = mlines.Line2D([], [], color=data_colors[idx])
+        legend_handles.append(legend_line)
+        legend_labels.append(data_labels[idx])
         idx += 1
 
     ax.set_xticks(np.arange(n_xlabel))
@@ -54,8 +55,8 @@ def boxplot_compare(ax, xlabels,
     if legend:
         # ax.legend(leg_handles, leg_labels, bbox_to_anchor=(
             # 1.05, 1), loc=2, borderaxespad=0.)
-        ax.legend(leg_handles, leg_labels)
-    map(lambda x: x.set_visible(False), leg_handles)
+        ax.legend(legend_handles, legend_labels)
+    map(lambda x: x.set_visible(False), legend_handles)
 
 
 def plot_trajectory_top(ax, pos, color, name, alpha=1.0):
