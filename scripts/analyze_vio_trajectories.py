@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 
+__author__ = 'Zachary Lacey'
+__email__ = 'zlacey1234$gmail.com'
+__date__ = 'September 9, 2021'
+
+__version__ = '0.1.0'
+__status__ = 'Prototype'
+
 import os
 import argparse
 import yaml
 import shutil
+import subprocess
 import json
 import itertools
 from datetime import datetime
@@ -13,6 +21,7 @@ from matplotlib import rc
 from colorama import init, Fore
 
 import add_path
+import zl_plot_utils as zlpu
 from trajectory import Trajectory
 import plot_utils as pu
 import results_writer as res_writer
@@ -29,7 +38,7 @@ FORMAT = '.pdf'
 
 def spec(N):
     t = np.linspace(-510, 510, N)
-    return np.round(np.clip(np.stack([-t, 510-np.abs(t), t], axis=1), 0, 255)).astype("float32")/255
+    return np.round(np.clip(np.stack([-t, 510 - np.abs(t), t], axis=1), 0, 255)).astype("float32") / 255
 
 
 PALLET = spec(10)
@@ -45,7 +54,9 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
         dataset_multi_error_list : `list`
             A nested list that contains the multiple error information for each test configurations in each dataset.
 
-            dataset_multi_error_list = [
+            Dataset is represented by each row dimension
+
+            - Example: dataset_multi_error_list = [
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_01
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_03
                 [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>] ]  # MH_05
@@ -54,13 +65,13 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
             A list that contains the datasets that the user wants to generates figures for. The example shows the setup
             for the some of the Euroc Datasets.
 
-            dataset_names = ['MH_01', 'MH_03', 'MH_05']
+            - Example: dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
     Returns:
         dataset_relative_error : `list`
             A nested list that contains the relative error information.
 
-            dataset_relative_error = [
+            - Example: dataset_relative_error = [
                 {   # Dictionary for MH_01
                     'trans_err':
                     'trans_err_perc':
@@ -87,11 +98,6 @@ def collect_odometry_error_per_dataset(dataset_multi_error_list, dataset_names_l
                 } ]
 
     """
-
-    print('Collect')
-    # print(dataset_multi_error_list)
-    print(dataset_names_list)
-
     # Dataset Relative Error List
     dataset_relative_error = []
 
@@ -159,7 +165,7 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
         dataset_relative_error : `list`
             A nested list that contains the relative error information.
 
-            dataset_relative_error = [
+            - Example: dataset_relative_error = [
                 {   # Dictionary for MH_01
                     'trans_err':
                     'trans_err_perc':
@@ -188,35 +194,36 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
         evaluation_uid : `str`
             A string which contains the evaluated uid that will be included in the output file name.
 
-            evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
+            - Example: evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
 
         dataset_names_list : `list`
             A list that contains the datasets that the user wants to generates figures for. The example shows the setup
             for the some of the Euroc Datasets.
 
-            dataset_names = ['MH_01', 'MH_03', 'MH_05']
+            - Example: dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
-        included_algorithm_names : ``
+        included_algorithm_names : `list`
+            A list of the algorithms that we selected to include in the config.yaml file.
 
         algorithm_test_names_dict : `dict`
             A nested dictionary that contains the test configurations that the user wants to plot in the generated
             figures.
 
-            algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+            - Example: algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
         test_names_list : `list`
             A list that contains all the algorithm/test configurations that the user wants include in the generated
             comparison plot figures.
 
-            test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
-                               'svo2-test-3', 'svo2-test-4']
+            - Example: test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
+                                          'svo2-test-3', 'svo2-test-4']
 
         datasets_output_directory : `dict`
             A nested dictionary that specifies the path to the output directories of each dataset.
 
-            dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
-                                        'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
-                                        'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
+            - Example:dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
+                                                  'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
+                                                  'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
 
         plotting_settings : `dict`
             A nested dictionary that specifies the plot settings.
@@ -224,31 +231,32 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
     Returns: N/A
 
     """
-    print('Plot')
-    print(dataset_names_list)
-    print(included_algorithm_names)
-
+    # For each Dataset
     for dataset_idx, dataset_name in enumerate(dataset_names_list):
         output_directory = datasets_output_directory[dataset_name]
         print("Plotting {0}...".format(dataset_name))
         rel_err = dataset_relative_error[dataset_idx]
+
+        # Check to make sure that all the possible tests are keys in the relative error metrics dictionary "rel_err"
         assert sorted(test_names_list) == sorted(list(rel_err['trans_err'].keys()))
+
+        # distance(distances that define the sub-trajectories. i.e., for MH_01, the distances are 8.06 m, 16.12 m,
+        # 24.18 m, 32.25 m, and 40.31 m)
         distances = rel_err['subtraj_len']
 
+        # Configure the labels (legend text) and the colors (legend colors).
         config_labels = []
         config_colors = []
-
         for algo in included_algorithm_names:
             for alg_test in range(len(algorithm_test_names_dict[algo])):
+                config_labels.append(plotting_settings['algorithms_tests_labels'][algo][alg_test])
+                config_colors.append(plotting_settings['alg_colors'][algo][alg_test])
 
-                config_labels.append(plot_settings['algorithms_tests_labels'][algo][alg_test])
-                config_colors.append(plot_settings['alg_colors'][algo][alg_test])
-
-        print(config_labels)
-        print(config_colors)
-
-        fig = plt.figure(figsize=(12, 3))
-        ax = fig.add_subplot(121, xlabel='Distance traveled (m)', ylabel='Translation error (\%)')
+        # Figure 1
+        # Translation Error [Percentage] (Translation Error which is normalized by the Distance Traveled) Box Plot and
+        # Rotation Error [Degrees/Meter] (Rotation Error which is normalized by the Distance Traveled) Box Plot.
+        fig = plt.figure(figsize=(12, 6))
+        ax = fig.add_subplot(121, xlabel='Distance traveled (m)', ylabel='Translation error (%)')
         pu.boxplot_compare(ax, distances, [rel_err['trans_err_perc'][test_name] for test_name in test_names_list],
                            config_labels, config_colors, legend=False)
 
@@ -261,8 +269,10 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
                     '_trans_percent_rot_per_meter_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
-        #
-        fig = plt.figure(figsize=(12, 3))
+        # Figure 2
+        # Translation Error [Meters] Box Plot
+        # Rotation Error [Degrees] Box Plot
+        fig = plt.figure(figsize=(12, 6))
         ax = fig.add_subplot(121, xlabel='Distance traveled (m)', ylabel='Translation error [m]')
         pu.boxplot_compare(ax, distances, [rel_err['trans_err'][test_name] for test_name in test_names_list],
                            config_labels, config_colors, legend=False)
@@ -277,6 +287,67 @@ def plot_odometry_error_per_dataset(dataset_relative_error, evaluation_uid, data
         plt.close(fig)
 
 
+def collect_absolute_error_per_algorithm_test(configuration_trajectories_list, included_algorithm_names,
+                                              algorithm_test_names_dict, plot_idx=0):
+    """
+
+    """
+    algorithm_test_absolute_error = {'absolute_translation_error': {}, 'absolute_rotation_error': {}}
+
+    for algo_idx, algo in enumerate(included_algorithm_names):
+
+        for test_idx, test_name in enumerate(algorithm_test_names_dict[algo]):
+            config_trajectories_error = configuration_trajectories_list[algo_idx][test_idx]
+
+            algo_test_string = algo + '-test-' + str(test_name)
+
+            algorithm_test_absolute_error['absolute_translation_error'][algo_test_string] = []
+            algorithm_test_absolute_error['absolute_rotation_error'][algo_test_string] = []
+
+            for trajectory_error in config_trajectories_error:
+                algorithm_test_absolute_error['absolute_translation_error'][algo_test_string].append(
+                    trajectory_error[plot_idx].abs_errors['abs_e_trans'])
+                algorithm_test_absolute_error['absolute_rotation_error'][algo_test_string].append(
+                    trajectory_error[plot_idx].abs_errors['abs_e_rot'])
+
+    print(algorithm_test_absolute_error)
+    return algorithm_test_absolute_error
+
+
+def plot_absolute_error_per_algorithm_test(algorithm_test_absolute_error, dataset_names_list, included_algorithm_names,
+                                           algorithm_test_names_dict, test_names_list, output_directory,
+                                           plotting_settings, plot_idx=0):
+    """
+
+    """
+    # Configure the labels (legend text) and the colors (legend colors).
+    config_labels = []
+    config_colors = []
+    for algo in included_algorithm_names:
+        for alg_test in range(len(algorithm_test_names_dict[algo])):
+            config_labels.append(plotting_settings['algorithms_tests_labels'][algo][alg_test])
+            config_colors.append(plotting_settings['alg_colors'][algo][alg_test])
+
+    labels = [plot_settings['datasets_labels'][v] for v in dataset_names_list]
+
+    # check
+    n_data = len(dataset_names_list)
+    for v in test_names_list:
+        assert len(algorithm_test_absolute_error['absolute_translation_error'][v]) == n_data
+        assert len(algorithm_test_absolute_error['absolute_rotation_error'][v]) == n_data
+
+    fig = plt.figure()
+    ax = fig.add_subplot(
+        111, xlabel='Datasets',
+        ylabel='Translation Absolute Error (m)')
+    pu.boxplot_compare(ax, labels,
+                       [algorithm_test_absolute_error['absolute_translation_error'][algo_test]
+                        for algo_test in test_names_list], config_labels, config_colors)
+    fig.tight_layout()
+    fig.savefig(output_directory + '/' + 'all_translation_absolute_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+    plt.close(fig)
+
+
 def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_names_list, included_algorithm_names,
                                   algorithm_test_names_dict, test_names_list, datasets_output_directory,
                                   plotting_settings, plot_idx=0, plot_aligned=True):
@@ -286,109 +357,111 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
     to the ground truth data).
 
     Args:
-        dataset_trajectories (
+        dataset_trajectories : `list`
+            A nested list that contains the trajectory information for each test configurations in each dataset.
+
+            - Example: dataset_trajectories = [
+                [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_01
+                [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>],   # MH_03
+                [<object rovio-test-0>, <object rovio-test-1>, <object rovio-test-2>, <object rovio-test-3>] ]  # MH_05
 
         evaluation_uid : `str`
             A string which contains the evaluated uid that will be included in the output file name.
 
-            evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
+            - Example: evaluation_uid = 'rovio-test-0-1-2-3__sv02-test-3-4__%Y%m%d%H%M'
 
         dataset_names_list : `list`
             A list that contains the datasets that the user wants to generates figures for. The example shows the setup
             for the some of the Euroc Datasets.
 
-            dataset_names = ['MH_01', 'MH_03', 'MH_05']
+            - Example: dataset_names = ['MH_01', 'MH_03', 'MH_05']
 
-        included_algorithm_names : ``
+        included_algorithm_names : `list`
+            A list of the algorithms that we selected to include in the config.yaml file.
 
         algorithm_test_names_dict : `dict`
             A nested dictionary that contains the test configurations that the user wants to plot in the generated
             figures.
 
-            algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+            - Example: algorithm_test_names = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
         test_names_list : `list`
             A list that contains all the algorithm/test configurations that the user wants include in the generated
             comparison plot figures.
 
-            test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
-                               'svo2-test-3', 'svo2-test-4']
+            - Example:test_names_list = ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3',
+                                         'svo2-test-3', 'svo2-test-4']
 
         datasets_output_directory : `dict`
             A nested dictionary that specifies the path to the output directories of each dataset.
 
-            dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
-                                        'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
-                                        'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
+            - Example: dataset_output_directory = {'MH_01': './results/av_euroc_vio_mono/arm_MH_01_results',
+                                                   'MH_03': './results/av_euroc_vio_mono/arm_MH_03_results',
+                                                   'MH_05': './results/av_euroc_vio_mono/arm_MH_05_results'}
 
         plotting_settings : `dict`
             A nested dictionary that specifies the plot settings.
 
-        plot_idx (datatype: int): An integer that is assigned a zero value. This is used to define the first index in
-            the trajectory list. In particular, the trajectories_list can be found as a single dimensional list that
-            contains the trajectory object.
+        plot_idx : `int`
+            An integer that is assigned a zero value. This is used to define the first index in the trajectory list.
+            In particular, the trajectories_list can be found as a single dimensional list that contains the trajectory
+            object.
 
-            trajectories_list =  [<object of trajectory>]
+            - Example: trajectories_list =  [<object of trajectory>]
 
-            So,
+                       So,
 
-            trajectories_list[plot_idx] = <object of trajectory>
+                       trajectories_list[plot_idx] = <object of trajectory>
+
+        plot_aligned (optional) : `bool`
+            A boolean that determines if we want to plot the trajectories with alignment. (default: True)
 
     """
+    # For each Dataset
     for dataset_idx, dataset_name in enumerate(dataset_names_list):
         output_directory = datasets_output_directory[dataset_name]
         print("Plotting {0}...".format(dataset_name))
         data_trajectories = dataset_trajectories[dataset_idx]
 
-        print(data_trajectories)
-        print(data_trajectories[0])
-
         p_es_0 = {}
         p_gt_raw = (data_trajectories[0])[plot_idx].p_gt_raw
         p_gt_0 = {}
-        absolute_errors = {}
+        absolute_errors_position = {}
+        absolute_errors_orientation = {}
         accumulated_distance = {}
 
-        for trajectory_list in data_trajectories:
-            print(trajectory_list)
-            print('\n')
-            print(trajectory_list[plot_idx].alg)
-            p_es_0[trajectory_list[plot_idx].alg] = trajectory_list[plot_idx].p_es_aligned
-            p_gt_0[trajectory_list[plot_idx].alg] = trajectory_list[plot_idx].p_gt
-            absolute_errors[trajectory_list[plot_idx].alg] = \
-                trajectory_list[plot_idx].abs_errors['abs_e_trans_vec']*1000
+        for trajectories_list in data_trajectories:
+            p_es_0[trajectories_list[plot_idx].alg] = trajectories_list[plot_idx].p_es_aligned
+            p_gt_0[trajectories_list[plot_idx].alg] = trajectories_list[plot_idx].p_gt
+            absolute_errors_position[trajectories_list[plot_idx].alg] = \
+                trajectories_list[plot_idx].abs_errors['abs_e_trans_vec'] * 1000
+            absolute_errors_orientation[trajectories_list[plot_idx].alg] = \
+                trajectories_list[plot_idx].abs_errors['abs_e_ypr'] * 180.0 / np.pi
 
-            accumulated_distance[trajectory_list[plot_idx].alg] = trajectory_list[plot_idx].accum_distances
+            accumulated_distance[trajectories_list[plot_idx].alg] = trajectories_list[plot_idx].accum_distances
 
         print("Collected trajectories to plot: {0}".format(test_names_list))
         assert sorted(test_names_list) == sorted(list(p_es_0.keys()))
 
-        print(p_gt_raw)
-
         print("Plotting {0}...".format(dataset_name))
 
+        # Configure the labels (legend text) and the colors (legend colors).
         config_labels = []
         config_colors = []
-
         for algo in included_algorithm_names:
             for alg_test in range(len(algorithm_test_names_dict[algo])):
                 config_labels.append(plotting_settings['algorithms_tests_labels'][algo][alg_test])
                 config_colors.append(plotting_settings['alg_colors'][algo][alg_test])
 
+        # Figure 1
+        # Distance Traveled vs XYZ Position Drift (Subplots)
         fig = plt.figure(figsize=(12, 6))
-
         for test_idx, test_name in enumerate(test_names_list):
             ax1 = fig.add_subplot(
                 311, xlabel='Distance [m]', ylabel='X-Position Drift [mm]',
                 xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
 
-            print('Test')
-            print(absolute_errors[test_name])
-            print(absolute_errors[test_name][:, 0])
-            print(config_colors[test_idx])
-            print(config_labels[test_idx])
-
-            ax1.plot(accumulated_distance[test_name], absolute_errors[test_name][:, 0],
+            ax1.plot(accumulated_distance[test_name], absolute_errors_position[test_name][:, 0],
                      label=config_labels[test_idx])
             ax1.legend()
 
@@ -396,7 +469,7 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
                 312, xlabel='Distance [m]', ylabel='Y-Position Drift [mm]',
                 xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
 
-            ax2.plot(accumulated_distance[test_name], absolute_errors[test_name][:, 1],
+            ax2.plot(accumulated_distance[test_name], absolute_errors_position[test_name][:, 1],
                      label=config_labels[test_idx])
             ax2.legend()
 
@@ -404,7 +477,7 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
                 313, xlabel='Distance [m]', ylabel='Z-Position Drift [mm]',
                 xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
 
-            ax3.plot(accumulated_distance[test_name], absolute_errors[test_name][:, 2],
+            ax3.plot(accumulated_distance[test_name], absolute_errors_position[test_name][:, 2],
                      label=config_labels[test_idx])
             ax3.legend()
 
@@ -413,13 +486,16 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
                     '_position_drift' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
 
+        # Figure 2
+        # Distance Traveled vs Position Drift Euclidean Norm
         fig = plt.figure(figsize=(12, 6))
         for test_idx, test_name in enumerate(test_names_list):
             ax = fig.add_subplot(
                 111, xlabel='Distance [m]', ylabel='Position Drift Euclidean Norm [mm]',
                 xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
 
-            ax.plot(accumulated_distance[test_name], np.linalg.norm(np.array(absolute_errors[test_name]), axis=1),
+            ax.plot(accumulated_distance[test_name],
+                    np.linalg.norm(np.array(absolute_errors_position[test_name]), axis=1),
                     label=config_labels[test_idx])
             ax.legend()
 
@@ -427,6 +503,195 @@ def plot_trajectories_per_dataset(dataset_trajectories, evaluation_uid, dataset_
         fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
                     '_position_drift_norm' + FORMAT, bbox_inches="tight", dpi=args.dpi)
         plt.close(fig)
+
+        # Figure 3
+        # Distance Traveled vs Yaw, Pitch, Roll Drift
+        fig = plt.figure(figsize=(12, 6))
+        for test_idx, test_name in enumerate(test_names_list):
+            ax1 = fig.add_subplot(
+                311, xlabel='Distance [m]', ylabel='Yaw Error [deg]',
+                xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
+
+            ax1.plot(accumulated_distance[test_name], absolute_errors_orientation[test_name][:, 0],
+                     label=config_labels[test_idx])
+            ax1.legend()
+
+            ax2 = fig.add_subplot(
+                312, xlabel='Distance [m]', ylabel='Pitch Error [deg]',
+                xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
+
+            ax2.plot(accumulated_distance[test_name], absolute_errors_orientation[test_name][:, 1],
+                     label=config_labels[test_idx])
+            ax2.legend()
+
+            ax3 = fig.add_subplot(
+                313, xlabel='Distance [m]', ylabel='Roll Error [deg]',
+                xlim=[0, (data_trajectories[0])[plot_idx].accum_distances[-1]])
+
+            ax3.plot(accumulated_distance[test_name], absolute_errors_orientation[test_name][:, 2],
+                     label=config_labels[test_idx])
+            ax3.legend()
+
+        fig.tight_layout()
+        fig.savefig(output_directory + '/' + evaluation_uid + '_' + dataset_name +
+                    '_orientation_error' + FORMAT, bbox_inches="tight", dpi=args.dpi)
+        plt.close(fig)
+
+
+def setup_and_process_result_directory(datasets_list, datasets_file_names_dict, datasets_rosbag_names_dict,
+                                       included_algorithm_names, algorithms_tests_dict):
+    """ Setup and Process Results Directory
+
+    This method is used for setting up the result directories (and if not already done, processing the rosbags) so that
+    the results can be analyzed.
+
+    Args:
+        datasets_list : `list`
+            A list that contains the datasets that the user wants to generates figures for. The example shows the setup
+            for the some of the Euroc Datasets.
+
+            - Example: datasets_list = ['MH_01', 'MH_03', 'MH_05']
+
+        datasets_file_names_dict : `dict`
+            A dictionary of the <dataset name> sub-string that you specify within the odometry rosbag file name
+
+            - Example:
+                If the recorded Odometry Rosbag is:
+                    rovio_traj_1_mh_01.bag
+
+                Then the datasets_file_names_dict will contain a Value
+                    mh_01
+                in its dictionary
+
+        datasets_rosbag_names_dict : `dict`
+            A dictionary that contains the <rosbag name> of the Dataset Rosbag
+
+            - Example:
+                datasets_rosbag_names_dict may have a value like:
+                    MH_01_easy
+                    MH_03_medium
+                    MH_05_difficult
+
+        included_algorithm_names : `list`
+            A list of the algorithms that we selected to include in the config.yaml file.
+
+        algorithms_tests_dict : `dict`
+            A nested dictionary that contains the test configurations that the user wants to plot in the generated
+            figures.
+
+            - Example: algorithms_tests_dict = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+
+    """
+    # Checking if the the results directory for the algorithm test is setup properly.
+    # For each algorithm test of each dataset
+    for datasets_name in datasets_list:
+        for algo in included_algorithm_names:
+            for tests in algorithms_tests_dict[algo]:
+
+                # Algorithm Directory
+                # -Example: ./results/av_euroc_vio_mono/arm/larvio
+                algorithm_directory = os.path.join(output_dir, '{}'.format(args.platform), '{}'.format(algo))
+
+                # Algorithm Dataset Directory
+                # -Example: ./results/av_euroc_vio_mono/arm/larvio/arm_larvio_MH_01
+                algorithm_dataset_directory = os.path.join(algorithm_directory,
+                                                           '{}_{}_{}'.format(args.platform, algo, datasets_name))
+
+                # Algorithm Test Directory
+                # -Example: ./results/av_euroc_vio_mono/arm/larvio/arm_larvio_MH_01/larvio-test-0
+                algorithm_test_data_directory = os.path.join(algorithm_dataset_directory,
+                                                             '{}-test-{}'.format(algo, tests))
+
+                # Check if the above directories are present at their respective specified paths
+                is_algorithm_directory_setup = os.path.isdir(algorithm_directory)
+                is_algorithm_dataset_directory_setup = os.path.isdir(algorithm_dataset_directory)
+                is_algorithm_test_data_directory_setup = os.path.isdir(algorithm_test_data_directory)
+
+                print('\nTest')
+                print(algorithm_directory)
+                print(algorithm_dataset_directory)
+                print(algorithm_test_data_directory)
+                print(is_algorithm_test_data_directory_setup)
+
+                # If the Algorithm Directory is NOT yet setup, make the directory
+                if not is_algorithm_directory_setup:
+                    os.makedirs(algorithm_directory)
+
+                # If the Algorithm Dataset Directory is NOT yet setup, make the directory
+                if not is_algorithm_dataset_directory_setup:
+                    os.makedirs(algorithm_dataset_directory)
+
+                # Checks if the 'eval_cfg.yaml' and 'stamped_groundtruth.txt' files are in the
+                eval_config_yaml_file = os.path.join(algorithm_dataset_directory, 'eval_cfg.yaml')
+                ground_truth_text_file = os.path.join(algorithm_dataset_directory, 'stamped_groundtruth.txt')
+
+                ground_truth_csv_dataset_directory = os.path.join('./scripts/user_tools/ground_truth_estimate_csv',
+                                                                  datasets_rosbag_names_dict[datasets_name])
+                ground_truth_csv_file = os.path.join(ground_truth_csv_dataset_directory, 'data.csv')
+
+                assert os.path.isfile(ground_truth_csv_file), "{0} not found. Need to install the ground truth data " \
+                                                              "from the Euroc website place the data.csv file " \
+                                                              "(Comma Separated Value file of the Vicon Pose " \
+                                                              "Estimate). Refer to Error Solution #1 in GitLab Wiki"
+
+                is_ground_truth_processed = os.path.isfile(ground_truth_text_file)
+                is_eval_config_yaml_file_setup = os.path.isfile(eval_config_yaml_file)
+
+                if not is_ground_truth_processed:
+                    print('process ground truth')
+                    subprocess.check_call(['python', './scripts/dataset_tools/asl_groundtruth_to_pose.py',
+                                           ground_truth_csv_file])
+
+                    standard_ground_truth_text_file = os.path.join(ground_truth_csv_dataset_directory,
+                                                                   'groundtruth.txt')
+
+                    shutil.copy2(standard_ground_truth_text_file, ground_truth_text_file)
+
+                if not is_eval_config_yaml_file_setup:
+                    standard_eval_config_yaml_file = './scripts/user_tools/eval_cfg.yaml'
+
+                    shutil.copy2(standard_eval_config_yaml_file, eval_config_yaml_file)
+
+                # If the Algorithm Test Directory is NOT yet setup
+                if not is_algorithm_test_data_directory_setup:
+                    # Makes the directory
+                    subprocess.check_call(
+                        ['./scripts/user_tools/setup_processed_bag_directory.sh', str(tests), str(algo),
+                         str(args.platform), str(datasets_name), output_dir])
+
+                # Checks if the Rosbag file is in the ~/vio_datasets directory
+                algorithm_test_bag_file = os.path.join(vio_datasets_directory,
+                                                       '{}_traj_{}_{}.bag'.format(
+                                                           algo, tests, datasets_file_names_dict[datasets_name]))
+
+                assert os.path.isfile(algorithm_test_bag_file), \
+                    "{0} not found. Need to add it to the vio_datasets directory!".format(algorithm_test_bag_file)
+
+                # Checks if the Rosbag file has been moved to the Algorithm Dataset Directory
+                algorithm_test_bag_file_new_location = os.path.join(algorithm_dataset_directory,
+                                                                    '{}_traj_{}.bag'.format(algo, tests))
+
+                is_algorithm_test_bag_file_in_new_location = os.path.isfile(algorithm_test_bag_file_new_location)
+
+                if not is_algorithm_test_bag_file_in_new_location:
+                    print(Fore.YELLOW +
+                          '{}_traj_{}.bag for Dataset {} not in new location yet.'.format(algo, tests, datasets_name)
+                          + 'Copying from vio_datasets directory now.')
+                    shutil.copy2(algorithm_test_bag_file, algorithm_test_bag_file_new_location)
+                else:
+                    print(Fore.YELLOW +
+                          '{}_traj_{}.bag for Dataset {} is already in the output directory.'.format(algo, tests,
+                                                                                                     datasets_name))
+
+                stamped_trajectory_estimate_file = os.path.join(algorithm_test_data_directory,
+                                                                'stamped_traj_estimate.txt')
+
+                is_trajectory_estimate_processed = os.path.isfile(stamped_trajectory_estimate_file)
+
+                if not is_trajectory_estimate_processed:
+                    print('Estimate Not here')
+                    subprocess.check_call(['./scripts/user_tools/process_bags.sh', str(tests), str(algo),
+                                           str(args.platform), str(datasets_name), output_dir])
 
 
 def parse_config_file(configuration_function, sort_names):
@@ -440,10 +705,16 @@ def parse_config_file(configuration_function, sort_names):
         Included Datasets:
             MH_01:
                 label: MH01
+                file name: mh_01
+                rosbag name: MH_01_easy
             MH_03:
                 label: MH03
+                file name: mh_03
+                rosbag name: MH_01_medium
             MH_05:
                 label: MH05
+                file name: mh_05
+                rosbag name: MH_01_difficult
         Algorithms:
             rovio:
                 include algorithm: true
@@ -507,45 +778,46 @@ def parse_config_file(configuration_function, sort_names):
             A list that contains the datasets that the user wants to generates figures for. The example shows the setup
             for the some of the Euroc Datasets.
 
-            datasets_list = ['MH_01', 'MH_03', 'MH_05']
+            - Example: datasets_list = ['MH_01', 'MH_03', 'MH_05']
 
         datasets_labels_dict : `dict`
             A dictionary that contains the datasets and their corresponding labels.
 
-            datasets_labels_dict = {'MH_01': 'MH01', 'MH_03': 'MH03', 'MH_05': 'MH05'}
+            - Example: datasets_labels_dict = {'MH_01': 'MH01', 'MH_03': 'MH03', 'MH_05': 'MH05'}
 
         datasets_titles_dict : `dict`
 
         all_algorithms_list : `list`
             A list of all the possible algorithms specified in the yaml file.
 
-            all_algorithms_list = ['larvio', 'rovio', 'svo2']
+            - Example: all_algorithms_list = ['larvio', 'rovio', 'svo2']
 
         algorithms_labels_dict : `dict`
             A dictionary that contains the labels for the algorithms that are specified to be included in the generated
             figures (specified in the yaml via the include algorithm dictionary key)
 
-            algorithms_labels_dict = {'rovio': 'rovio', 'svo2': 'svo2'}
+            - Example: algorithms_labels_dict = {'rovio': 'rovio', 'svo2': 'svo2'}
 
         algorithms_file_names_dict : `dict`
             A dictionary that contains the file names for the algorithms that are specified to be included in the
             generated figures (specified in the yaml via the include algorithm dictionary key)
 
-            algorithms_file_names_dict = {'rovio': ['traj_est', 'traj_est', 'traj_est', 'traj_est'],
-                'svo2': ['traj_est', 'traj_est']}
+            - Example: algorithms_file_names_dict = {'rovio': ['traj_est', 'traj_est', 'traj_est', 'traj_est'],
+                            'svo2': ['traj_est', 'traj_est']}
 
         algorithms_tests_dict : `dict`
             A nested dictionary that contains the test configurations that the user wants to plot in the generated
             figures.
 
-            algorithms_tests_dict = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
+            - Example: algorithms_tests_dict = {'rovio': [0, 1, 2, 3], 'svo2': [3, 4]}
 
         algorithms_tests_labels_dict : `dict`
             A nested dictionary that contains the test labels. These labels are used for purposes such as the plot's
             legend names.
 
-            algorithms_tests_labels_dict = {'rovio': ['rovio-test-0', 'rovio-test-1', 'rovio-test-2', 'rovio-test-3'],
-                'svo2': ['svo2-test-3', 'svo2-test-4']}
+            - Example: algorithms_tests_labels_dict = {'rovio': ['rovio-test-0', 'rovio-test-1',
+                                                                 'rovio-test-2', 'rovio-test-3'],
+                                                       'svo2': ['svo2-test-3', 'svo2-test-4']}
 
     """
     with open(configuration_function) as stream:
@@ -563,11 +835,15 @@ def parse_config_file(configuration_function, sort_names):
 
     # Datasets labels and titles (datatype: dictionaries)
     datasets_labels_dict = {}
+    datasets_file_names_dict = {}
+    datasets_rosbag_names_dict = {}
     datasets_titles_dict = {}
 
     # For each dataset in the config.yaml, assign the dataset label into the datasets_labels dictionary
     for datasets_name in datasets_list:
         datasets_labels_dict[datasets_name] = yaml_config_data['Included Datasets'][datasets_name]['label']
+        datasets_file_names_dict[datasets_name] = yaml_config_data['Included Datasets'][datasets_name]['file name']
+        datasets_rosbag_names_dict[datasets_name] = yaml_config_data['Included Datasets'][datasets_name]['rosbag name']
 
         if 'title' in yaml_config_data['Included Datasets'][datasets_name]:
             datasets_titles_dict[datasets_name] = yaml_config_data['Included Datasets'][datasets_name]['title']
@@ -606,8 +882,7 @@ def parse_config_file(configuration_function, sort_names):
             for test_number in yaml_config_data['Algorithms'][algorithms_name]['tests']:
                 algorithms_file_name_string = yaml_config_data['Algorithms'][algorithms_name]['file name']
 
-                algorithms_test_label_string = yaml_config_data['Algorithms'][algorithms_name]['label'] + '-test-' + \
-                    str(test_number)
+                algorithms_test_label_string = yaml_config_data['Algorithms'][algorithms_name]['label'] + '-test-' + str(test_number)
 
                 # Append to the Lists
                 algorithms_file_names_list.append(algorithms_file_name_string)
@@ -633,12 +908,15 @@ def parse_config_file(configuration_function, sort_names):
         print(Fore.RED + "Will use the distances instead of percentages.")
         boxplot_percentages_dict = []
 
-    return comparison_options, datasets_list, datasets_labels_dict, datasets_titles_dict, all_algorithms_list, \
-        algorithms_labels_dict, algorithms_file_names_dict, algorithms_tests_dict, algorithms_tests_labels_dict, \
-        algorithms_tests_labels_file_names_dict, boxplot_distances_dict, boxplot_percentages_dict
+    return comparison_options, datasets_list, datasets_labels_dict, datasets_file_names_dict,\
+           datasets_rosbag_names_dict, datasets_titles_dict, all_algorithms_list, algorithms_labels_dict,\
+           algorithms_file_names_dict, algorithms_tests_dict, algorithms_tests_labels_dict,\
+           algorithms_tests_labels_file_names_dict, boxplot_distances_dict, boxplot_percentages_dict
 
 
 if __name__ == '__main__':
+
+    vio_datasets_directory = '/root/vio_datasets'
 
     # Parsing Argument Options
     parser = argparse.ArgumentParser(description='''Analyze trajectories''')
@@ -699,6 +977,8 @@ if __name__ == '__main__':
     parser.add_argument('--no_plot_aligned', action='store_false', dest='plot_aligned')
     parser.add_argument('--no_plot_traj_per_alg', action='store_false',
                         dest='plot_traj_per_alg')
+    parser.add_argument('--compare_all_abs_errors', help='Create plots that compares the absolute error of all the '
+                                                         'trajectories', action='store_true')
 
     parser.add_argument('--recalculate_errors',
                         help='Deletes cached errors', action='store_true')
@@ -711,7 +991,8 @@ if __name__ == '__main__':
                         plot_trajectories=False, rmse_boxplot=False,
                         recalculate_errors=False, png=False, time_statistics=False,
                         sort_names=True, plot_side=True, plot_aligned=True,
-                        plot_traj_per_alg=True, rmse_median_only=False)
+                        plot_traj_per_alg=True, rmse_median_only=False,
+                        compare_all_abs_errors=False)
 
     args = parser.parse_args()
     print("Arguments:\n{}".format(
@@ -722,18 +1003,20 @@ if __name__ == '__main__':
           "in {1}".format(args.results_dir, args.output_dir))
     output_dir = args.output_dir
 
+    is_output_dir_setup = os.path.isdir(output_dir)
+
+    if not is_output_dir_setup:
+        os.makedirs(output_dir)
+
     config_fn = os.path.join(config_path, args.config)
 
     print("Parsing evaluation configuration {0}...".format(config_fn))
 
     # Parsing the Configuration yaml file
-    compare_opts, datasets, datasets_labels, datasets_titles, all_algorithms, algorithms_labels, \
-        algorithms_file_names, algorithms_tests, algorithms_tests_labels, algorithms_tests_labels_file_names, \
-        boxplot_distances, boxplot_percentages = parse_config_file(config_fn, args.sort_names)
-
-    print(datasets_titles)
-    print(boxplot_distances)
-    print(boxplot_percentages)
+    compare_opts, datasets, datasets_labels, datasets_file_names, datasets_rosbag_names, datasets_titles, \
+    all_algorithms, algorithms_labels, algorithms_file_names, algorithms_tests, algorithms_tests_labels, \
+    algorithms_tests_labels_file_names, boxplot_distances, boxplot_percentages = parse_config_file(config_fn,
+                                                                                                   args.sort_names)
 
     # Copy the Configuration yaml to the Output Directory
     shutil.copy2(config_fn, output_dir)
@@ -751,6 +1034,9 @@ if __name__ == '__main__':
     # List of the Algorithms that will be included. Note: any algorithm that has (include algorithm = false) in the
     # av_euroc_vio_mono_config.yaml file will not be in this list.
     included_alg = algorithms_tests_labels.keys()
+
+    setup_and_process_result_directory(datasets, datasets_file_names, datasets_rosbag_names, included_alg,
+                                       algorithms_tests)
 
     # Checks if there there are not enough colors in the Pallet to ensure that the figure has unique colors for each
     # data
@@ -790,9 +1076,9 @@ if __name__ == '__main__':
     print(Fore.YELLOW + "Algorithms to evaluate: ")
     for alg in included_alg:
         for test in range(len(algorithms_tests[alg])):
-            print(Fore.YELLOW+'- {0}: {1}, {2}, {3}'.format(alg, algorithms_tests_labels[alg][test],
-                                                            algorithms_file_names[alg][test],
-                                                            alg_colors[alg][test]))
+            print(Fore.YELLOW + '- {0}: {1}, {2}, {3}'.format(alg, algorithms_tests_labels[alg][test],
+                                                              algorithms_file_names[alg][test],
+                                                              alg_colors[alg][test]))
 
     # Plot settings
     plot_settings = {'datasets_labels': datasets_labels,
@@ -851,8 +1137,6 @@ if __name__ == '__main__':
                                          args.platform, config_i, experiment_name,
                                          algorithms_tests_labels[config_i][test_i])
 
-                print(experiment_name)
-                print(trace_dir)
                 assert os.path.exists(trace_dir), \
                     "{0} not found.".format(trace_dir)
 
@@ -865,9 +1149,7 @@ if __name__ == '__main__':
                 if not dataset_boxdist_map[d] and trajectory_list:
                     print("Assign the boxplot distances for {0}...".format(d))
                     dataset_boxdist_map[d] = trajectory_list[0].preset_boxplot_distances
-                print('Trajectory List\n')
-                print(trajectory_list)
-                print(mt_error)
+
                 for traj in trajectory_list:
                     traj.alg = algorithms_tests_labels[config_i][test_i]
                     traj.dataset_short_name = d
@@ -885,25 +1167,20 @@ if __name__ == '__main__':
         config_trajectories_list.append(cur_trajectories_i)
         config_multierror_list.append(cur_multierror_i)
 
-    print('Trajectories\n')
-    print(config_trajectories_list)
-    print(config_multierror_list)
     # organize by dataset name
     dataset_trajectories_list = []
     dataset_multierror_list = []
 
     for ds_idx, dataset_nm in enumerate(datasets):
-        print(ds_idx)
-        print(dataset_nm)
-        dataset_trajs = [config_trajectories_list[0][test_i][ds_idx]
-                         for test_i in range(len(algorithms_tests[alg]))]
-        dataset_trajectories_list.append(dataset_trajs)
-        dataset_multierrors = [config_multierror_list[0][test_i][ds_idx]
-                               for test_i in range(len(algorithms_tests[alg]))]
-        dataset_multierror_list.append(dataset_multierrors)
+        dataset_trajs = []
+        dataset_multierrors = []
 
-    print(dataset_trajectories_list)
-    print(dataset_multierror_list)
+        for alg_idx, config_i in enumerate(included_alg):
+            for test_i in range(len(algorithms_tests[config_i])):
+                dataset_trajs.append(config_trajectories_list[alg_idx][test_i][ds_idx])
+                dataset_multierrors.append(config_multierror_list[alg_idx][test_i][ds_idx])
+        dataset_trajectories_list.append(dataset_trajs)
+        dataset_multierror_list.append(dataset_multierrors)
 
     print("#####################################")
     print(">>> Analyze different error types...")
@@ -911,35 +1188,33 @@ if __name__ == '__main__':
     print(Fore.RED + ">>> Processing absolute trajectory errors...")
     tests_label_list = []
     if args.rmse_table:
-        rmse_table = {}
-        rmse_table['values'] = []
-        for config_mt_error in config_multierror_list[0]:
-            print('con\n')
-            print(config_mt_error)
-            cur_trans_rmse = []
-            for mt_error_d in config_mt_error:
-                print("> Processing {0}".format(mt_error_d.uid))
-                if args.rmse_median_only or n_trials == 1:
-                    cur_trans_rmse.append(
-                        "{:3.3f}".format(
-                            mt_error_d.abs_errors['rmse_trans_stats']['median']))
-                else:
-                    cur_trans_rmse.append(
-                        "{:3.3f}, {:3.3f} ({:3.3f} - {:3.3f})".format(
-                            mt_error_d.abs_errors['rmse_trans_stats']['mean'],
-                            mt_error_d.abs_errors['rmse_trans_stats']['median'],
-                            mt_error_d.abs_errors['rmse_trans_stats']['min'],
-                            mt_error_d.abs_errors['rmse_trans_stats']['max']))
-            rmse_table['values'].append(cur_trans_rmse)
-            tests_label_list.append(mt_error_d.alg)
-        rmse_table['rows'] = tests_label_list
-        rmse_table['cols'] = datasets
-        print('\n--- Generating RMSE tables... ---')
-        res_writer.write_tex_table(
-            rmse_table['values'], rmse_table['rows'], rmse_table['cols'],
-            os.path.join(output_dir, args.platform + '_translation_rmse_' +
-                         eval_uid + '.txt'))
+        rmse_table = {'values': []}
 
+        for alg_idx, config_i in enumerate(included_alg):
+            for config_mt_error in config_multierror_list[alg_idx]:
+                cur_trans_rmse = []
+                for mt_error_d in config_mt_error:
+                    print("> Processing {0}".format(mt_error_d.uid))
+                    if args.rmse_median_only or n_trials == 1:
+                        cur_trans_rmse.append(
+                            "{:3.3f}".format(
+                                mt_error_d.abs_errors['rmse_trans_stats']['median']))
+                    else:
+                        cur_trans_rmse.append(
+                            "{:3.3f}, {:3.3f} ({:3.3f} - {:3.3f})".format(
+                                mt_error_d.abs_errors['rmse_trans_stats']['mean'],
+                                mt_error_d.abs_errors['rmse_trans_stats']['median'],
+                                mt_error_d.abs_errors['rmse_trans_stats']['min'],
+                                mt_error_d.abs_errors['rmse_trans_stats']['max']))
+                rmse_table['values'].append(cur_trans_rmse)
+                tests_label_list.append(mt_error_d.alg)
+            rmse_table['rows'] = tests_label_list
+            rmse_table['cols'] = datasets
+            print('\n--- Generating RMSE tables... ---')
+            res_writer.write_tex_table(
+                rmse_table['values'], rmse_table['rows'], rmse_table['cols'],
+                os.path.join(output_dir, args.platform + '_translation_rmse_' +
+                             eval_uid + '.txt'))
 
     # TODO: If you wish to have multiple n_trials
     # if args.rmse_boxplot and n_trials > 1:
@@ -947,10 +1222,7 @@ if __name__ == '__main__':
     #     rmse_plot_alg_test = []
 
     print(Fore.RED + ">>> Collecting odometry errors per dataset...")
-    print(algorithms_tests_labels)
-    print(alg_colors)
     if args.odometry_error_per_dataset:
-        dataset_rel_err = {}
         dataset_rel_err = collect_odometry_error_per_dataset(
             dataset_multierror_list, datasets)
         print(Fore.MAGENTA +
@@ -960,10 +1232,20 @@ if __name__ == '__main__':
     print(Fore.GREEN + "<<< .... processing odometry errors done.\n")
 
     if args.plot_trajectories:
-        print(Fore.MAGENTA+'--- Plotting trajectory top and side view ... ---')
+        print(Fore.MAGENTA + '--- Plotting trajectory top and side view ... ---')
         plot_trajectories_per_dataset(dataset_trajectories_list, eval_uid, datasets, included_alg, algorithms_tests,
                                       tests_label_list, datasets_res_dir,
                                       plot_settings, plot_aligned=args.plot_aligned)
+
+    zlpu.generate_error_tables(dataset_trajectories_list, eval_uid, datasets, included_alg, algorithms_tests,
+                               datasets_res_dir)
+
+    if args.compare_all_abs_errors:
+        algorithms_tests_abs_err = collect_absolute_error_per_algorithm_test(config_trajectories_list, included_alg,
+                                                                             algorithms_tests)
+
+        plot_absolute_error_per_algorithm_test(algorithms_tests_abs_err, datasets, included_alg, algorithms_tests,
+                                               tests_label_list, output_dir, plot_settings)
 
     if args.write_time_statistics:
         dataset_alg_t_stats = []
@@ -975,7 +1257,7 @@ if __name__ == '__main__':
                     cur_alg_t_stats['start'].append(traj.t_es[0])
                     cur_alg_t_stats['end'].append(traj.t_es[-1])
                     cur_alg_t_stats['n_meas'].append(traj.t_es.size)
-                cur_d_time_stats[algo_labels[alg]] = cur_alg_t_stats
+                cur_d_time_stats[alg_labels[alg]] = cur_alg_t_stats
             dataset_alg_t_stats.append(cur_d_time_stats)
 
         for didx, d in enumerate(datasets):
@@ -983,6 +1265,7 @@ if __name__ == '__main__':
                 json.dump(dataset_alg_t_stats[didx], f, indent=2)
 
     import subprocess as s
+
     s.call(['notify-send', 'rpg_trajectory_evaluation finished',
             'results in: {0}'.format(os.path.abspath(output_dir))])
     print("#####################################")
